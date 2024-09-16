@@ -7,8 +7,6 @@ import matplotlib.cm as cm
 import joypy
 
 # Load datasets
-patients = pd.read_csv('D:\homework\AI Healthcare\CSV\PATIENTS.csv')
-adm = pd.read_csv('D:\homework\AI Healthcare\CSV\ADMISSIONS.csv')
 
 # Merge the data using the 'SUBJECT_ID' column
 merged_df = pd.merge(patients, adm, on='SUBJECT_ID', how='inner')
