@@ -4,8 +4,6 @@ from matplotlib.colors import Normalize, LinearSegmentedColormap
 from matplotlib.ticker import FixedLocator, FixedFormatter
 
 # If the file is in the root project folder
-patients = pd.read_csv('D:\homework\AI Healthcare\CSV\PATIENTS.csv')
-pre = pd.read_csv('D:\homework\AI Healthcare\CSV\PRESCRIPTIONS.csv', low_memory=False)
 
 df = patients
 
