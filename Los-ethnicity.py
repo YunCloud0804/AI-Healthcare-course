@@ -3,9 +3,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load data
-#patients = pd.read_csv('D:/homework/AI Healthcare/CSV/PATIENTS.csv')
-icu = pd.read_csv('D:/homework/AI Healthcare/CSV/ICUSTAYS.csv')
-adm = pd.read_csv('D:/homework/AI Healthcare/CSV/ADMISSIONS.csv')
 
 # Merge icustays, admissions, and patients on SUBJECT_ID
 merged_data_icu = pd.merge(icu, adm, on='SUBJECT_ID', how='inner')
