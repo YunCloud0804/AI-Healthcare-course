@@ -5,8 +5,6 @@ import joypy
 import numpy as np
 
 # Step 1: Load only relevant columns with chunksize to avoid MemoryError
-adm = pd.read_csv('D:\homework\AI Healthcare\CSV\ADMISSIONS.csv', usecols=['SUBJECT_ID', 'ETHNICITY'])
-chart_iter = pd.read_csv('D:\homework\AI Healthcare\CSV\CHARTEVENTS.csv', usecols=['SUBJECT_ID', 'CHARTTIME'], chunksize=100000)
 
 # Step 2: Filter each chunk for relevant SUBJECT_IDs in the adm file and retain first chart time per subject
 filtered_chunks = []
