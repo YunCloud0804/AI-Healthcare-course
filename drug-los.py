@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load the PRESCRIPTIONS dataset
-pre = pd.read_csv('D:\homework\AI Healthcare\CSV\PRESCRIPTIONS.csv', low_memory=False)
 
 # Clean the DRUG column
 pre['DRUG'] = pre['DRUG'].str.strip().dropna()
