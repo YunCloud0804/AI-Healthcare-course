@@ -1,0 +1,11 @@
+infection_type,acute_kidney_failure,chronic_kidney_disease,diabetes_mellitus,myocardial_infarction,asthma,chronic_liver_disease,hypertension,pneumonia
+Sepsis,3330,1204,1818,757,413,621,2282,1390
+Urinary Tract Infection,2521,1267,1913,909,429,409,2967,1060
+Clostridium Difficile Infection,717,378,453,192,100,110,595,333
+Bloodstream Infection,621,323,483,168,125,171,621,263
+Surgical Site Infection,466,184,350,158,99,94,570,168
+Osteomyelitis,261,161,296,91,46,44,235,105
+Endocarditis,176,89,102,47,30,31,130,60
+Pneumonia,37,15,22,10,10,3,28,11
+Bacterial Meningitis,32,6,22,13,9,2,46,14
+Skin and Soft Tissue Infection,3,3,7,2,1,1,5,3

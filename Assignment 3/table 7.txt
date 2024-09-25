@@ -1,0 +1,60 @@
+WITH AcuteKidneyFailurePatients AS (
+    -- Step 1: Identify patients diagnosed with acute kidney failure (ICD-9 code '584%')
+    SELECT DISTINCT d.SUBJECT_ID, d.HADM_ID
+    FROM DIAGNOSES_ICD d
+    WHERE d.ICD9_CODE LIKE '584%'
+),
+MortalityData AS (
+    -- Step 2: Calculate mortality data (died and survived)
+    SELECT 
+        adm.INSURANCE,
+        SUM(CASE WHEN adm.HOSPITAL_EXPIRE_FLAG = 1 THEN 1 ELSE 0 END) AS Died_Count,
+        SUM(CASE WHEN adm.HOSPITAL_EXPIRE_FLAG = 0 THEN 1 ELSE 0 END) AS Survived_Count,
+        COUNT(*) AS Total_Patients
+    FROM ADMISSIONS adm
+    JOIN AcuteKidneyFailurePatients akp ON adm.HADM_ID = akp.HADM_ID
+    GROUP BY adm.INSURANCE
+),
+Readmissions AS (
+    -- Step 3: Calculate readmission data
+    SELECT 
+        adm.SUBJECT_ID,
+        COUNT(adm.HADM_ID) AS Admission_Count
+    FROM ADMISSIONS adm
+    JOIN AcuteKidneyFailurePatients akp ON adm.SUBJECT_ID = akp.SUBJECT_ID
+    GROUP BY adm.SUBJECT_ID
+),
+InsuranceReadmission AS (
+    -- Step 4: Join readmission data with admissions to get readmission status
+    SELECT 
+        adm.INSURANCE,
+        SUM(CASE WHEN ra.Admission_Count > 1 THEN 1 ELSE 0 END) AS Readmission_Count,
+        SUM(CASE WHEN ra.Admission_Count = 1 THEN 1 ELSE 0 END) AS Not_Readmission_Count,
+        COUNT(DISTINCT adm.SUBJECT_ID) AS Total_Patients_Readmission,
+        SUM(CASE WHEN ra.Admission_Count > 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(DISTINCT adm.SUBJECT_ID) AS Readmission_Percentage
+    FROM ADMISSIONS adm
+    LEFT JOIN Readmissions ra ON adm.SUBJECT_ID = ra.SUBJECT_ID
+    JOIN AcuteKidneyFailurePatients akp ON adm.HADM_ID = akp.HADM_ID
+    GROUP BY adm.INSURANCE
+)
+-- Step 5: Combine mortality and readmission data into a single query
+SELECT 
+    m.INSURANCE AS Insurance_Type,
+    
+    -- Mortality data
+    m.Died_Count,
+    m.Survived_Count,
+    m.Total_Patients AS Total_Patients_Mortality,
+
+    -- Add survival rate column
+    (m.Survived_Count * 100.0 / m.Total_Patients) AS Survival_Rate,
+
+    -- Readmission data
+    r.Readmission_Count,
+    r.Not_Readmission_Count,
+    r.Total_Patients_Readmission AS Total_Patients_Readmission,
+    r.Readmission_Percentage
+    
+FROM MortalityData m
+LEFT JOIN InsuranceReadmission r ON m.INSURANCE = r.INSURANCE
+ORDER BY m.Total_Patients DESC;

@@ -1,0 +1,33 @@
+WITH AcuteKidneyFailurePatients AS (
+    -- Step 1: Identify patients diagnosed with acute kidney failure (ICD-9 code '584%')
+    SELECT DISTINCT d.SUBJECT_ID, d.HADM_ID
+    FROM DIAGNOSES_ICD d
+    WHERE d.ICD9_CODE LIKE '584%'
+),
+MortalityData AS (
+    -- Step 2: Calculate mortality data (died and survived) categorized by LOS
+    SELECT 
+        CASE 
+            WHEN EXTRACT(DAY FROM (adm.DISCHTIME - adm.ADMITTIME)) < 5 THEN '0-4 days'
+            WHEN EXTRACT(DAY FROM (adm.DISCHTIME - adm.ADMITTIME)) BETWEEN 5 AND 9 THEN '5-9 days'
+            WHEN EXTRACT(DAY FROM (adm.DISCHTIME - adm.ADMITTIME)) BETWEEN 10 AND 14 THEN '10-14 days'
+            ELSE '15+ days'
+        END AS LOS_Category,
+        SUM(CASE WHEN adm.HOSPITAL_EXPIRE_FLAG = 1 THEN 1 ELSE 0 END) AS Died_Count,
+        SUM(CASE WHEN adm.HOSPITAL_EXPIRE_FLAG = 0 THEN 1 ELSE 0 END) AS Survived_Count,
+        COUNT(*) AS Total_Patients
+    FROM ADMISSIONS adm
+    JOIN AcuteKidneyFailurePatients akp ON adm.HADM_ID = akp.HADM_ID
+    WHERE adm.DISCHTIME IS NOT NULL  -- Ensure the patient has been discharged
+    GROUP BY LOS_Category
+)
+-- Step 3: Calculate mortality rate based on LOS category
+SELECT 
+    m.LOS_Category,
+    m.Died_Count,
+    m.Survived_Count,
+    m.Total_Patients,
+    (m.Survived_Count * 100.0 / m.Total_Patients) AS Survival_Rate,
+    (m.Died_Count * 100.0 / m.Total_Patients) AS Mortality_Rate
+FROM MortalityData m
+ORDER BY m.LOS_Category;

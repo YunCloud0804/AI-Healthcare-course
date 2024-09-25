@@ -1,0 +1,6 @@
+insurance_type,died_count,survived_count,total_patients_mortality,survival_rate,readmission_count,not_readmission_count,total_patients_readmission,readmission_percentage
+Medicare,1765,5766,7531,76.56353738,3527,4004,6309,55.90426375
+Private,538,2040,2578,79.13110939,1101,1477,2241,49.12985274
+Medicaid,164,861,1025,84,527,498,817,64.50428397
+Government,45,171,216,79.16666667,74,142,203,36.45320197
+Self Pay,25,47,72,65.27777778,12,60,71,16.90140845

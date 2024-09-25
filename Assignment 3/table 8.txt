@@ -1,0 +1,67 @@
+WITH DiseasePatients AS (
+    -- Step 1: Identify patients with the 8 diseases (acute kidney failure and 7 others)
+    SELECT DISTINCT d.SUBJECT_ID,
+        CASE
+            WHEN d.ICD9_CODE LIKE '584%' THEN 'Acute Kidney Failure'
+            WHEN d.ICD9_CODE LIKE '585%' THEN 'Chronic Kidney Disease'
+            WHEN d.ICD9_CODE LIKE '250%' THEN 'Diabetes Mellitus'
+            WHEN d.ICD9_CODE LIKE '410%' THEN 'Myocardial Infarction'  -- Heart Attack
+            WHEN d.ICD9_CODE LIKE '493%' THEN 'Asthma'
+            WHEN d.ICD9_CODE LIKE '571%' THEN 'Chronic Liver Disease'
+            WHEN d.ICD9_CODE LIKE '401%' THEN 'Hypertension'
+            WHEN d.ICD9_CODE LIKE '486%' THEN 'Pneumonia'
+            ELSE 'Other'
+        END AS Disease
+    FROM DIAGNOSES_ICD d
+    WHERE d.ICD9_CODE LIKE '584%'  -- Acute Kidney Failure
+       OR d.ICD9_CODE LIKE '585%'  -- Chronic Kidney Disease
+       OR d.ICD9_CODE LIKE '250%'  -- Diabetes Mellitus
+       OR d.ICD9_CODE LIKE '410%'  -- Myocardial Infarction
+       OR d.ICD9_CODE LIKE '493%'  -- Asthma
+       OR d.ICD9_CODE LIKE '571%'  -- Chronic Liver Disease
+       OR d.ICD9_CODE LIKE '401%'  -- Hypertension
+       OR d.ICD9_CODE LIKE '486%'  -- Pneumonia
+),
+InfectionDiagnoses AS (
+    -- Step 2: Identify infection diagnoses from DIAGNOSES_ICD
+    SELECT DISTINCT d.SUBJECT_ID, d.ICD9_CODE, 
+        CASE
+            WHEN d.ICD9_CODE LIKE '038%' THEN 'Sepsis'
+            WHEN d.ICD9_CODE LIKE '480%' THEN 'Pneumonia'
+            WHEN d.ICD9_CODE = '5990' THEN 'Urinary Tract Infection'
+            WHEN d.ICD9_CODE = '7907' THEN 'Bloodstream Infection'
+            WHEN d.ICD9_CODE LIKE '9985%' THEN 'Surgical Site Infection'
+            WHEN d.ICD9_CODE = '00845' THEN 'Clostridium Difficile Infection'
+            WHEN d.ICD9_CODE LIKE '680%' OR d.ICD9_CODE LIKE '681%' OR d.ICD9_CODE LIKE '682%' THEN 'Skin and Soft Tissue Infection'
+            WHEN d.ICD9_CODE LIKE '320%' THEN 'Bacterial Meningitis'
+            WHEN d.ICD9_CODE LIKE '730%' THEN 'Osteomyelitis'
+            WHEN d.ICD9_CODE = '4210' THEN 'Endocarditis'
+            ELSE 'Other Infection'
+        END AS Infection_Type
+    FROM DIAGNOSES_ICD d
+    WHERE d.ICD9_CODE LIKE '038%'  -- Sepsis
+       OR d.ICD9_CODE LIKE '480%'  -- Pneumonia
+       OR d.ICD9_CODE = '5990'     -- UTI
+       OR d.ICD9_CODE = '7907'     -- Bacteremia
+       OR d.ICD9_CODE LIKE '9985%' -- Surgical Site Infection
+       OR d.ICD9_CODE = '00845'    -- C. difficile Infection
+       OR d.ICD9_CODE LIKE '680%'  -- Skin Infections (Cellulitis, Abscess)
+       OR d.ICD9_CODE LIKE '320%'  -- Bacterial Meningitis
+       OR d.ICD9_CODE LIKE '730%'  -- Osteomyelitis
+       OR d.ICD9_CODE = '4210'     -- Endocarditis
+)
+-- Step 3: Pivot the infections vs diseases and order by acute kidney failure
+SELECT 
+    id.Infection_Type,
+    COUNT(DISTINCT CASE WHEN dp.Disease = 'Acute Kidney Failure' THEN id.SUBJECT_ID END) AS Acute_Kidney_Failure,
+    COUNT(DISTINCT CASE WHEN dp.Disease = 'Chronic Kidney Disease' THEN id.SUBJECT_ID END) AS Chronic_Kidney_Disease,
+    COUNT(DISTINCT CASE WHEN dp.Disease = 'Diabetes Mellitus' THEN id.SUBJECT_ID END) AS Diabetes_Mellitus,
+    COUNT(DISTINCT CASE WHEN dp.Disease = 'Myocardial Infarction' THEN id.SUBJECT_ID END) AS Myocardial_Infarction,
+    COUNT(DISTINCT CASE WHEN dp.Disease = 'Asthma' THEN id.SUBJECT_ID END) AS Asthma,
+    COUNT(DISTINCT CASE WHEN dp.Disease = 'Chronic Liver Disease' THEN id.SUBJECT_ID END) AS Chronic_Liver_Disease,
+    COUNT(DISTINCT CASE WHEN dp.Disease = 'Hypertension' THEN id.SUBJECT_ID END) AS Hypertension,
+    COUNT(DISTINCT CASE WHEN dp.Disease = 'Pneumonia' THEN id.SUBJECT_ID END) AS Pneumonia
+FROM InfectionDiagnoses id
+JOIN DiseasePatients dp ON id.SUBJECT_ID = dp.SUBJECT_ID
+GROUP BY id.Infection_Type
+ORDER BY Acute_Kidney_Failure DESC;

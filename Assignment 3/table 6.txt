@@ -1,0 +1,57 @@
+WITH AcuteKidneyFailurePatients AS (
+    -- Step 1: Select patients with acute kidney failure (ICD9_CODE starting with '584')
+    SELECT DISTINCT d.SUBJECT_ID, d.HADM_ID
+    FROM DIAGNOSES_ICD d
+    WHERE d.ICD9_CODE LIKE '584%'  -- Acute Kidney Failure ICD-9 Code
+),
+ElectrolyteLabEvents AS (
+    -- Step 2: Select lab events for patients with acute kidney failure
+    SELECT 
+        le.SUBJECT_ID,
+        le.HADM_ID,
+        le.ITEMID,
+        le.FLAG,
+        le.VALUENUM  -- Include the test value for quartile, median, min, and max calculation
+    FROM LABEVENTS le
+    JOIN AcuteKidneyFailurePatients akp ON le.HADM_ID = akp.HADM_ID
+    WHERE le.ITEMID IN (
+        -- Filter for lab tests done on blood
+        SELECT ITEMID 
+        FROM D_LABITEMS 
+        WHERE FLUID = 'Blood'  -- Only consider tests done on blood samples
+    )
+),
+TopElectrolytes AS (
+    -- Step 3: Aggregate the total test counts, abnormal test counts, abnormal rate, and calculate quartiles, min, max for abnormal tests
+    SELECT 
+        le.ITEMID,
+        COUNT(*) AS Total_Test_Count,  -- Total number of tests
+        SUM(CASE WHEN le.FLAG = 'abnormal' THEN 1 ELSE 0 END) AS Abnormal_Test_Count,  -- Count of abnormal tests
+        (SUM(CASE WHEN le.FLAG = 'abnormal' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) AS Abnormal_Rate,  -- Calculate abnormal rate as percentage
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY le.VALUENUM) 
+            FILTER (WHERE le.FLAG = 'abnormal') AS Median_Abnormal_Value,  -- Median of abnormal tests
+        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY le.VALUENUM) 
+            FILTER (WHERE le.FLAG = 'abnormal') AS First_Quartile,  -- First quartile (Q1) of abnormal tests
+        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY le.VALUENUM) 
+            FILTER (WHERE le.FLAG = 'abnormal') AS Third_Quartile,  -- Third quartile (Q3) of abnormal tests
+        MIN(le.VALUENUM) FILTER (WHERE le.FLAG = 'abnormal') AS Min_Abnormal_Value,  -- Minimum of abnormal tests
+        MAX(le.VALUENUM) FILTER (WHERE le.FLAG = 'abnormal') AS Max_Abnormal_Value  -- Maximum of abnormal tests
+    FROM ElectrolyteLabEvents le
+    GROUP BY le.ITEMID
+    ORDER BY Total_Test_Count DESC
+    LIMIT 20  -- Get top 20 most tested electrolytes
+)
+-- Step 4: Join with D_LABITEMS to get the electrolyte labels and display results
+SELECT 
+    dli.LABEL AS Electrolyte,
+    te.Total_Test_Count,
+    te.Abnormal_Test_Count,
+    te.Abnormal_Rate,
+    te.Median_Abnormal_Value,
+    te.First_Quartile,
+    te.Third_Quartile,
+    te.Min_Abnormal_Value,  -- New column: Min value of abnormal tests
+    te.Max_Abnormal_Value   -- New column: Max value of abnormal tests
+FROM TopElectrolytes te
+JOIN D_LABITEMS dli ON te.ITEMID = dli.ITEMID
+ORDER BY te.Total_Test_Count DESC;

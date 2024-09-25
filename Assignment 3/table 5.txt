@@ -1,0 +1,24 @@
+WITH Filtered_Admissions AS (
+    SELECT DISTINCT adm.HADM_ID, adm.ADMISSION_TYPE
+    FROM ADMISSIONS adm
+    JOIN DIAGNOSES_ICD d ON adm.HADM_ID = d.HADM_ID
+    WHERE d.ICD9_CODE LIKE '584%'  -- Filter for acute kidney failure (ICD9 codes starting with '584')
+)
+
+SELECT
+    d_proc.LONG_TITLE AS Procedure_Description,  -- Use the long title instead of the short title
+    SUM(CASE WHEN adm.ADMISSION_TYPE = 'EMERGENCY' THEN 1 ELSE 0 END) AS EMERGENCY,
+    SUM(CASE WHEN adm.ADMISSION_TYPE = 'ELECTIVE' THEN 1 ELSE 0 END) AS ELECTIVE,
+    SUM(CASE WHEN adm.ADMISSION_TYPE = 'NEWBORN' THEN 1 ELSE 0 END) AS NEWBORN,
+    SUM(CASE WHEN adm.ADMISSION_TYPE = 'URGENT' THEN 1 ELSE 0 END) AS URGENT
+FROM
+    Filtered_Admissions adm  -- Use the filtered admissions that only include acute kidney failure
+JOIN
+    PROCEDURES_ICD p ON adm.HADM_ID = p.HADM_ID
+JOIN
+    D_ICD_PROCEDURES d_proc ON p.ICD9_CODE = d_proc.ICD9_CODE
+GROUP BY
+    d_proc.LONG_TITLE  -- Group by long title now
+ORDER BY
+    EMERGENCY DESC, ELECTIVE DESC, NEWBORN DESC, URGENT DESC
+LIMIT 20;  -- Select the top 20 results

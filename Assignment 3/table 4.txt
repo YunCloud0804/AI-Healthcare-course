@@ -1,0 +1,47 @@
+WITH Filtered_Diseases AS (
+    SELECT 
+        d.SUBJECT_ID, 
+        d.HADM_ID, 
+        d.ICD9_CODE,
+        CASE 
+            WHEN d.ICD9_CODE LIKE '584%' THEN 'Acute Kidney Failure'
+            WHEN d.ICD9_CODE LIKE '585%' THEN 'Chronic Kidney Disease'  -- ICD-9 for Chronic Kidney Disease (moved to second position)
+            WHEN d.ICD9_CODE LIKE '250%' THEN 'Diabetes'
+            WHEN d.ICD9_CODE LIKE '410%' THEN 'Heart Attack'
+            WHEN d.ICD9_CODE LIKE '493%' THEN 'Asthma'
+            WHEN d.ICD9_CODE LIKE '571%' THEN 'Liver Disease'            -- ICD-9 for Liver Disease
+            WHEN d.ICD9_CODE LIKE '401%' THEN 'Hypertension'             -- ICD-9 for Hypertension
+            WHEN d.ICD9_CODE LIKE '486%' THEN 'Pneumonia'                -- ICD-9 for Pneumonia
+            ELSE 'Other'
+        END AS Disease_Name
+    FROM DIAGNOSES_ICD d
+    WHERE d.ICD9_CODE LIKE '584%'       -- Acute Kidney Failure
+       OR d.ICD9_CODE LIKE '585%'       -- Chronic Kidney Disease
+       OR d.ICD9_CODE LIKE '250%'       -- Diabetes
+       OR d.ICD9_CODE LIKE '410%'       -- Heart Attack
+       OR d.ICD9_CODE LIKE '493%'       -- Asthma
+       OR d.ICD9_CODE LIKE '571%'       -- Liver Disease
+       OR d.ICD9_CODE LIKE '401%'       -- Hypertension
+       OR d.ICD9_CODE LIKE '486%'       -- Pneumonia
+)
+
+SELECT
+    p.DRUG AS Prescription_Name,
+    SUM(CASE WHEN f_d.Disease_Name = 'Acute Kidney Failure' THEN 1 ELSE 0 END) AS "Acute Kidney Failure",
+    SUM(CASE WHEN f_d.Disease_Name = 'Chronic Kidney Disease' THEN 1 ELSE 0 END) AS "Chronic Kidney Disease",  -- Moved this to second
+    SUM(CASE WHEN f_d.Disease_Name = 'Diabetes' THEN 1 ELSE 0 END) AS "Diabetes",
+    SUM(CASE WHEN f_d.Disease_Name = 'Heart Attack' THEN 1 ELSE 0 END) AS "Heart Attack",
+    SUM(CASE WHEN f_d.Disease_Name = 'Asthma' THEN 1 ELSE 0 END) AS "Asthma",
+    SUM(CASE WHEN f_d.Disease_Name = 'Liver Disease' THEN 1 ELSE 0 END) AS "Liver Disease",
+    SUM(CASE WHEN f_d.Disease_Name = 'Hypertension' THEN 1 ELSE 0 END) AS "Hypertension",
+    SUM(CASE WHEN f_d.Disease_Name = 'Pneumonia' THEN 1 ELSE 0 END) AS "Pneumonia"
+FROM
+    Filtered_Diseases f_d
+JOIN
+    PRESCRIPTIONS p ON f_d.HADM_ID = p.HADM_ID
+GROUP BY
+    p.DRUG
+ORDER BY
+    "Acute Kidney Failure" DESC, "Chronic Kidney Disease" DESC, "Diabetes" DESC, "Heart Attack" DESC, 
+    "Asthma" DESC, "Liver Disease" DESC, "Hypertension" DESC, "Pneumonia" DESC
+

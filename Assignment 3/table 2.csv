@@ -1,0 +1,12 @@
+age_group,white_count,black_african_american_count,unknown_not_specified_count,hispanic_or_latino_count,other_count,unable_to_obtain_count,asian_count,patient_declined_to_answer_count
+0,3,0,0,0,1,0,0,0
+10,9,2,1,1,1,0,1,0
+20,116,47,17,9,11,7,1,1
+30,204,90,21,18,13,4,4,6
+40,636,146,61,37,26,23,7,6
+50,1229,275,82,53,30,30,23,14
+60,1635,302,114,51,57,38,28,16
+70,1842,275,190,58,38,42,38,22
+80,1690,159,141,28,31,43,48,12
+300,725,62,34,6,7,5,15,3
+310,5,0,0,0,0,0,0,0
