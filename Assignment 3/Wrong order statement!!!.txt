@@ -1,0 +1,32 @@
+The list of table names for your acute kidney failure project is:
+
+1.Age-Gender Distribution.
+2.Ethnicity-Age Distribution.
+3.LOS (Length of Stay)-Age Distribution.
+4.Top Prescriptions - compare with other diseases.
+5.Procedure - Admin Type.
+6.different electrolyte in blood - abnormal data stats
+7.Insurance - Mortality and readmin
+8.infection - different diseases
+9.Comorbidities - weight dis.
+10.LOS-motality.
+
+I sepearte 10 tables into 4 parts with the original order
+
+Part 1
+Age-Gender Distribution 	  1
+Ethnicity-Age Distribution 	2
+
+Part 2
+Procedure - Admin Type 		        5
+different electrolyte in blood - abnormal data stats	6
+infection - different diseases		8
+Comorbidities - weight dis		    9
+Top Prescriptions - compare with other diseases		    4
+
+Part 3
+LOS (Length of Stay)-Age Distribution		3
+LOS-motality					                  10
+
+Part 4
+Insurance - Mortality and readmin		7
